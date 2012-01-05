@@ -25,6 +25,7 @@ namespace AmCharts.Windows.QuickCharts
         {
             this.DefaultStyleKey = typeof(Balloon);
             this.IsHitTestVisible = false;
+            Background = Brushes.WhiteSmoke;
         }
 
         /// <summary>

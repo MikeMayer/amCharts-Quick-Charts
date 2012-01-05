@@ -261,10 +261,15 @@ namespace AmCharts.Windows.QuickCharts
             _legend.ManipulationStarted += new EventHandler<ManipulationStartedEventArgs>(OnGridManipulationStarted);
 #endif
         }
-
+        private Brush _balloonBrush = System.Windows.Media.Brushes.WhiteSmoke;
+        public void SetBalloonBrush(Brush brush)
+        {
+            _balloonBrush = brush;
+        }
         private void AssignBalloon()
         {
             _balloon = (Balloon)TreeHelper.TemplateFindName("PART_Balloon", this);
+            _balloon.BorderBrush = _balloonBrush;
         }
 
 #if WINDOWS_PHONE

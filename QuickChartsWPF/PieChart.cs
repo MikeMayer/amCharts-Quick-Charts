@@ -363,6 +363,7 @@ namespace AmCharts.Windows.QuickCharts
             _sliceCanvas = (Canvas)TreeHelper.TemplateFindName("PART_SliceCanvas", this);
 
             _balloon = (Balloon)TreeHelper.TemplateFindName("PART_Balloon", this);
+            _balloon.BorderBrush = _balloonBrush;
 
             AddSlicesToCanvas();
 
@@ -456,7 +457,14 @@ namespace AmCharts.Windows.QuickCharts
         public List<Brush> Brushes
         {
             get { return _brushes; }
-            set { throw new NotSupportedException(); }
+            set { _brushes = value; }
+        }
+
+
+        private Brush _balloonBrush = System.Windows.Media.Brushes.WhiteSmoke;
+        public void SetBalloonBrush(Brush brush)
+        {
+                _balloonBrush = brush;
         }
 
         private void DisplayBalloon(Slice slice, Point position)

@@ -85,32 +85,27 @@ namespace AmCharts.Windows.QuickCharts
 
         private void SetLineX(int i)
         {
-            if (_gridCanvas != null)
-            {
-                if (_gridLines[i].X2 != _gridCanvas.ActualWidth)
-                {
-                    _gridLines[i].X2 = _gridCanvas.ActualWidth;
-                }
-            }
+            if (this._gridCanvas == null) 
+                return;
+
+            if (this._gridLines[i].X2 != this._gridCanvas.ActualWidth)
+                this._gridLines[i].X2 = this._gridCanvas.ActualWidth;
         }
 
         private void SetLineY(int i)
         {
-            if (_gridLines[i].Y1 != _locations[i])
-            {
-                _gridLines[i].Y1 = _locations[i];
-                _gridLines[i].Y2 = _gridLines[i].Y1;
-            }
+            if (Math.Abs(this._gridLines[i].Y1 - this._locations[i]) <= Double.Epsilon) 
+                return;
+
+            this._gridLines[i].Y1 = this._locations[i];
+            this._gridLines[i].Y2 = this._gridLines[i].Y1;
         }
 
         private void AddGridLines(int count)
         {
             for (int i = count; i < _locations.Count; i++)
             {
-                Line line = new Line();
-                line.Stroke = Foreground;
-                line.StrokeThickness = 1;
-                line.X1 = 0;
+                Line line = new Line {Stroke = Foreground, StrokeThickness = 1, X1 = 0};
                 _gridLines.Add(line);
 
                 SetLineX(i);

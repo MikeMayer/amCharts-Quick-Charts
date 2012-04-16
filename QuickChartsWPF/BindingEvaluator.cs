@@ -37,9 +37,7 @@ namespace AmCharts.Windows.QuickCharts
         public object Eval(object source)
         {
             ClearValue(BindingEvaluator.EvaluatorProperty);
-            var binding = new Binding(_propertyPath);
-            binding.Mode = BindingMode.OneTime;
-            binding.Source = source;
+            var binding = new Binding(_propertyPath) {Mode = BindingMode.OneTime, Source = source};
             SetBinding(BindingEvaluator.EvaluatorProperty, binding);
             return GetValue(BindingEvaluator.EvaluatorProperty);
         }

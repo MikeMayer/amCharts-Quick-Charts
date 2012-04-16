@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -63,12 +64,10 @@ namespace AmCharts.Windows.QuickCharts
         {
             Indicator indicator = new Indicator();
 
-            Binding fillBinding = new Binding("Brush");
-            fillBinding.Source = graph;
+            Binding fillBinding = new Binding("Brush") {Source = graph};
             indicator.SetBinding(Indicator.FillProperty, fillBinding);
 
-            Binding strokeBinding = new Binding("PlotAreaBackground");
-            strokeBinding.Source = this;
+            Binding strokeBinding = new Binding("PlotAreaBackground") {Source = this};
             indicator.SetBinding(Indicator.StrokeProperty, strokeBinding);
 
 #if WINDOWS_PHONE
@@ -222,8 +221,7 @@ namespace AmCharts.Windows.QuickCharts
             _valueAxis = (ValueAxis)TreeHelper.TemplateFindName("PART_ValueAxis", this);
             _valueGrid = (ValueGrid)TreeHelper.TemplateFindName("PART_ValueGrid", this);
 
-            Binding formatBinding = new Binding("ValueFormatString");
-            formatBinding.Source = this;
+            Binding formatBinding = new Binding("ValueFormatString") {Source = this};
             _valueAxis.SetBinding(ValueAxis.ValueFormatStringProperty, formatBinding);
 
             _categoryAxis = (CategoryAxis)TreeHelper.TemplateFindName("PART_CategoryAxis", this);
@@ -256,7 +254,7 @@ namespace AmCharts.Windows.QuickCharts
         private void AssignLegend()
         {
             _legend = (Legend)TreeHelper.TemplateFindName("PART_Legend", this);
-            _legend.LegendItemsSource = this.Graphs.Cast<ILegendItem>(); // TODO: handle changes in Graphs
+            _legend.LegendItemsSource = this.Graphs; // TODO: handle changes in Graphs
 #if WINDOWS_PHONE
             _legend.ManipulationStarted += new EventHandler<ManipulationStartedEventArgs>(OnGridManipulationStarted);
 #endif
@@ -304,17 +302,19 @@ namespace AmCharts.Windows.QuickCharts
 
         private void SetToolTips(Point position)
         {
-            int index = GetIndexByCoordinate(position.X);
-            if (index > -1)
-            {
-                for (int i = 0; i < _graphs.Count; i++)
-                {
-                    string tooltipContent = _graphs[i].Title + ": " + _categoryValues[index] + " | "
-                        + (string.IsNullOrEmpty(ValueFormatString) ? _values[_graphs[i].ValueMemberPath][index].ToString() : _values[_graphs[i].ValueMemberPath][index].ToString(ValueFormatString));
-                    //ToolTipService.SetToolTip(_indicators[_graphs[i]], tooltipContent);
-                    //ToolTipService.SetToolTip(_graphs[i], tooltipContent);
-                    _indicators[_graphs[i]].Text = tooltipContent;
-                }
+            var index = GetIndexByCoordinate(position.X);
+
+            if (index <= -1) 
+                return;
+
+            foreach (SerialGraph t in this._graphs) {
+                var tooltipContent = t.Title + ": " + this._categoryValues[index] + " | "
+                                     + (string.IsNullOrEmpty(this.ValueFormatString) 
+                                                ? this._values[t.ValueMemberPath][index].ToString(CultureInfo.InvariantCulture) 
+                                                : this._values[t.ValueMemberPath][index].ToString(this.ValueFormatString));
+                //ToolTipService.SetToolTip(_indicators[_graphs[i]], tooltipContent);
+                //ToolTipService.SetToolTip(_graphs[i], tooltipContent);
+                this._indicators[t].Text = tooltipContent;
             }
         }
 
@@ -363,14 +363,9 @@ namespace AmCharts.Windows.QuickCharts
 
             if (oldCount != _categoryGridCount)
             {
-                if (_categoryGridCount > 1)
-                {
-                    _categoryAxis.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _categoryAxis.Visibility = Visibility.Collapsed;
-                }
+                this._categoryAxis.Visibility = this._categoryGridCount > 1
+                                                   ? Visibility.Visible
+                                                   : Visibility.Collapsed;
             }
         }
 
@@ -431,7 +426,9 @@ namespace AmCharts.Windows.QuickCharts
             SerialChart chart = d as SerialChart;
             DetachOldDataSourceCollectionChangedListener(chart, e.OldValue);
             AttachDataSourceCollectionChangedListener(chart, e.NewValue);
-            chart.ProcessData();
+
+            if (chart != null) 
+                chart.ProcessData();
         }
 
         private static void DetachOldDataSourceCollectionChangedListener(SerialChart chart, object dataSource)
@@ -496,7 +493,7 @@ namespace AmCharts.Windows.QuickCharts
         {
             if (this.DataSource != null)
             {
-                var paths = GetDistinctPaths();
+                var paths = GetDistinctPaths().ToArray();
 
                 Dictionary<string, BindingEvaluator> bindingEvaluators = CreateBindingEvaluators(paths);
                 ResetValues(paths);
@@ -523,13 +520,11 @@ namespace AmCharts.Windows.QuickCharts
             {
                 BindingEvaluator eval = new BindingEvaluator(CategoryValueMemberPath);
 
-                foreach (object dataItem in this.DataSource)
-                {
-                    var val = string.IsNullOrEmpty(CategoryFormatString)
-                                  ? (eval.Eval(dataItem).ToString())
-                                  : string.Format(CategoryFormatString, eval.Eval(dataItem));
-                    _categoryValues.Add(val);
-                }
+                foreach (var val in from object dataItem in this.DataSource select string.IsNullOrEmpty(this.CategoryFormatString)
+                                                                                           ? (eval.Eval(dataItem).ToString())
+                                                                                           : string.Format(this.CategoryFormatString, eval.Eval(dataItem))) {
+                                                                                               this._categoryValues.Add(val);
+                                                                                           }
             }
         }
 
@@ -551,12 +546,7 @@ namespace AmCharts.Windows.QuickCharts
 
         private Dictionary<string, BindingEvaluator> CreateBindingEvaluators(IEnumerable<string> paths)
         {
-            Dictionary<string, BindingEvaluator> bindingEvaluators = new Dictionary<string, BindingEvaluator>();
-            foreach (string path in paths)
-            {
-                bindingEvaluators.Add(path, new BindingEvaluator(path));
-            }
-            return bindingEvaluators;
+            return paths.ToDictionary(path => path, path => new BindingEvaluator(path));
         }
 
         private void ResetValues(IEnumerable<string> paths)
@@ -572,14 +562,16 @@ namespace AmCharts.Windows.QuickCharts
         {
             if (_values.Count > 0)
             {
-                var minimumValues = from vs in _values.Values
+                var minimumValues = (from vs in _values.Values
                                     where vs.Count > 0
-                                    select vs.Min();
-                _minimumValue = minimumValues.Count() > 0 ? minimumValues.Min() : 0;
-                var maximumValues = from vs in _values.Values
+                                    select vs.Min()).ToArray();
+                _minimumValue = minimumValues.Any() ? minimumValues.Min() : 0;
+
+                var maximumValues = (from vs in _values.Values
                                     where vs.Count > 0
-                                    select vs.Max();
-                _maximumValue = maximumValues.Count() > 0 ? maximumValues.Max() : 9;
+                                    select vs.Max()).ToArray();
+
+                _maximumValue = maximumValues.Any() ? maximumValues.Max() : 9;
 
                 AdjustMinMax(_desiredValueGridCount);
 
@@ -667,7 +659,7 @@ namespace AmCharts.Windows.QuickCharts
             double min = _minimumValue;
             double max = _maximumValue;
 
-            if (min == 0 && max == 0)
+            if (Math.Abs(min - 0) < Double.Epsilon && Math.Abs(max - 0) < Double.Epsilon)
             {
                 max = 9;
             }
@@ -684,7 +676,7 @@ namespace AmCharts.Windows.QuickCharts
             double dif = max - min;
             double dif_e;
 
-            if (dif == 0)
+            if (Math.Abs(dif - 0) < Double.Epsilon)
             {
                 // difference is 0 if all values of the period are equal
                 // then difference will be

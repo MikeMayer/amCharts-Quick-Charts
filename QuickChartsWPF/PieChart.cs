@@ -80,7 +80,9 @@ namespace AmCharts.Windows.QuickCharts
             PieChart chart = d as PieChart;
             DetachOldDataSourceCollectionChangedListener(chart, e.OldValue);
             AttachDataSourceCollectionChangedListener(chart, e.NewValue);
-            chart.ProcessData();
+            
+            if (chart != null) 
+                chart.ProcessData();
         }
 
         private static void DetachOldDataSourceCollectionChangedListener(PieChart chart, object dataSource)
@@ -224,11 +226,11 @@ namespace AmCharts.Windows.QuickCharts
                 SetSliceBrush(i);
 
                 // angle
-                ((RotateTransform)_slices[i].RenderTransform).Angle = (_total != 0 ? runningTotal / _total * 360 : 360.0 / _slices.Count * i);
+                ((RotateTransform)_slices[i].RenderTransform).Angle = (Math.Abs(this._total - 0) > Double.Epsilon ? runningTotal / _total * 360 : 360.0 / _slices.Count * i);
                 runningTotal += _values[i];
 
                 // tooltip
-                string tooltipContent = _slices[i].Title + " : " + _values[i].ToString() + " (" + (_total != 0 ? _values[i] / _total : 1.0 / _slices.Count).ToString("0.#%") + ")";
+                string tooltipContent = _slices[i].Title + " : " + this._values[i] + " (" + (Math.Abs(this._total - 0) > Double.Epsilon ? _values[i] / _total : 1.0 / _slices.Count).ToString("0.#%") + ")";
                 //ToolTipService.SetToolTip(_slices[i], tooltipContent);
                 _slices[i].ToolTipText = tooltipContent;
             }
@@ -263,9 +265,7 @@ namespace AmCharts.Windows.QuickCharts
         {
             for (int i = _slices.Count; i < _values.Count; i++)
             {
-                Slice slice = new Slice();
-                slice.RenderTransform = new RotateTransform();
-                slice.RenderTransformOrigin = new Point(0, 0);
+                Slice slice = new Slice {RenderTransform = new RotateTransform(), RenderTransformOrigin = new Point(0, 0)};
                 _slices.Add(slice);
 #if WINDOWS_PHONE
                 slice.ManipulationStarted += new EventHandler<ManipulationStartedEventArgs>(OnSliceManipulationStarted);
@@ -388,7 +388,7 @@ namespace AmCharts.Windows.QuickCharts
         {
             if (_legend != null)
             {
-                _legend.LegendItemsSource = _slices.Cast<ILegendItem>();
+                _legend.LegendItemsSource = this._slices;
             }
         }
 
@@ -415,20 +415,21 @@ namespace AmCharts.Windows.QuickCharts
 
         private void ArrangeSlices()
         {
-            if (_sliceCanvasDecorator != null)
+            if (this._sliceCanvasDecorator == null) 
+                return;
+
+            var center = new Point(this._sliceCanvasDecorator.ActualWidth / 2, this._sliceCanvasDecorator.ActualHeight / 2);
+            var radius = Math.Min(this._sliceCanvasDecorator.ActualWidth, this._sliceCanvasDecorator.ActualHeight) / 2;
+
+            for (int i = 0; i < this._slices.Count; i++)
             {
-                Point center = new Point(_sliceCanvasDecorator.ActualWidth / 2, _sliceCanvasDecorator.ActualHeight / 2);
-                double radius = Math.Min(_sliceCanvasDecorator.ActualWidth, _sliceCanvasDecorator.ActualHeight) / 2;
-                for (int i = 0; i < _slices.Count; i++)
-                {
-                    _slices[i].SetDimensions(radius, (_total != 0 ? _values[i] / _total : 1.0 / _slices.Count));
-                    _slices[i].SetValue(Canvas.LeftProperty, center.X);
-                    _slices[i].SetValue(Canvas.TopProperty, center.Y);
-                }
+                this._slices[i].SetDimensions(radius, (Math.Abs(this._total - 0) > Double.Epsilon ? this._values[i] / this._total : 1.0 / this._slices.Count));
+                this._slices[i].SetValue(Canvas.LeftProperty, center.X);
+                this._slices[i].SetValue(Canvas.TopProperty, center.Y);
             }
         }
 
-        private List<Brush> _presetBrushes = new List<Brush>()
+        private readonly List<Brush> _presetBrushes = new List<Brush>()
         {
             new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0x0F, 0x00)),
             new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0x66, 0x00)),

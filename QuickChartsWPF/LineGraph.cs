@@ -29,15 +29,13 @@ namespace AmCharts.Windows.QuickCharts
 
         private void BindBrush()
         {
-            Binding brushBinding = new Binding("Brush");
-            brushBinding.Source = this;
+            Binding brushBinding = new Binding("Brush") {Source = this};
             _lineGraph.SetBinding(Polyline.StrokeProperty, brushBinding);
         }
 
         private void BindStrokeThickness()
         {
-            Binding thicknessBinding = new Binding("StrokeThickness");
-            thicknessBinding.Source = this;
+            Binding thicknessBinding = new Binding("StrokeThickness") {Source = this};
             _lineGraph.SetBinding(Polyline.StrokeThicknessProperty, thicknessBinding);
         }
 

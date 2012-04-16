@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
@@ -20,7 +17,7 @@ namespace AmCharts.Windows.QuickCharts
         /// </summary>
         public ColumnGraph()
         {
-            this.DefaultStyleKey = typeof(ColumnGraph);
+            DefaultStyleKey = typeof(ColumnGraph);
             _columnGraph = new Path();
             _columnGraphGeometry = new PathGeometry();
             _columnGraph.Data = _columnGraphGeometry;
@@ -30,14 +27,17 @@ namespace AmCharts.Windows.QuickCharts
 
         private void BindBrush()
         {
-            Binding brushBinding = new Binding("Brush");
-            brushBinding.Source = this;
-            _columnGraph.SetBinding(Path.FillProperty, brushBinding);
+            var brushBinding = new Binding("Brush")
+            {
+                    Source = this
+            };
+
+            _columnGraph.SetBinding(Shape.FillProperty, brushBinding);
         }
 
         private Canvas _graphCanvas;
-        private Path _columnGraph;
-        private PathGeometry _columnGraphGeometry;
+        private readonly Path _columnGraph;
+        private readonly PathGeometry _columnGraphGeometry;
 
         /// <summary>
         /// Applies control template.
@@ -74,9 +74,9 @@ namespace AmCharts.Windows.QuickCharts
         {
             for (int i = changeCount; i < Locations.Count; i++)
             {
-                PathFigure column = new PathFigure();
+                var column = new PathFigure();
                 _columnGraphGeometry.Figures.Add(column);
-                for (int si = 0; si < 4; si++)
+                for (var si = 0; si < 4; si++)
                 {
                     column.Segments.Add(new LineSegment());
                 }
@@ -102,17 +102,36 @@ namespace AmCharts.Windows.QuickCharts
 
         private void SetColumnSegments(int index)
         {
-            double width = XStep * ColumnWidthAllocation;
-            double left = Locations[index].X - width / 2;
-            double right = left + width;
-            double y1 = GroundLevel;
-            double y2 = Locations[index].Y;
+            var width = XStep * ColumnWidthAllocation;
+            var left = Locations[index].X - width / 2;
+            var right = left + width;
+            var y1 = GroundLevel;
+            var y2 = Locations[index].Y;
 
             _columnGraphGeometry.Figures[index].StartPoint = new Point(left, y1);
-            (_columnGraphGeometry.Figures[index].Segments[0] as LineSegment).Point = new Point(right, y1);
-            (_columnGraphGeometry.Figures[index].Segments[1] as LineSegment).Point = new Point(right, y2);
-            (_columnGraphGeometry.Figures[index].Segments[2] as LineSegment).Point = new Point(left, y2);
-            (_columnGraphGeometry.Figures[index].Segments[3] as LineSegment).Point = new Point(left, y1);
+
+
+            if (this._columnGraphGeometry.Figures[index].Segments == null || this._columnGraphGeometry.Figures[index].Segments.Count < 4) 
+                return;
+
+            try
+            {
+                if (this._columnGraphGeometry.Figures[index].Segments[0] != null)
+                    ((LineSegment)this._columnGraphGeometry.Figures[index].Segments[0]).Point = new Point(right, y1);
+
+                if (this._columnGraphGeometry.Figures[index].Segments[1] != null)
+                    ((LineSegment)this._columnGraphGeometry.Figures[index].Segments[1]).Point = new Point(right, y2);
+
+                if (this._columnGraphGeometry.Figures[index].Segments[2] != null)
+                    ((LineSegment)this._columnGraphGeometry.Figures[index].Segments[2]).Point = new Point(left, y2);
+
+                if (this._columnGraphGeometry.Figures[index].Segments[3] != null)
+                    ((LineSegment)this._columnGraphGeometry.Figures[index].Segments[3]).Point = new Point(left, y1);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+            }
         }
 
         /// <summary>
@@ -132,8 +151,8 @@ namespace AmCharts.Windows.QuickCharts
         /// </remarks>
         public double ColumnWidthAllocation
         {
-            get { return (double)GetValue(ColumnGraph.ColumnWidthAllocationProperty); }
-            set { SetValue(ColumnGraph.ColumnWidthAllocationProperty, value); }
+            get { return (double)GetValue(ColumnWidthAllocationProperty); }
+            set { SetValue(ColumnWidthAllocationProperty, value); }
         }
 
     }

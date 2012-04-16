@@ -34,13 +34,11 @@ namespace AmCharts.Windows.QuickCharts
             this.Title = OriginalItem.Title;
             this.Brush = OriginalItem.Brush;
 #else
-            Binding titleBinding = new Binding("Title");
-            titleBinding.Source = OriginalItem;
-            BindingOperations.SetBinding(this, LegendItem.TitleProperty, titleBinding);
+            Binding titleBinding = new Binding("Title") {Source = this.OriginalItem};
+            BindingOperations.SetBinding(this, TitleProperty, titleBinding);
 
-            Binding brushBinding = new Binding("Brush");
-            brushBinding.Source = OriginalItem;
-            BindingOperations.SetBinding(this, LegendItem.BrushProperty, brushBinding);
+            Binding brushBinding = new Binding("Brush") {Source = this.OriginalItem};
+            BindingOperations.SetBinding(this, BrushProperty, brushBinding);
 #endif
         }
 

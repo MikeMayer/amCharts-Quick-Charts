@@ -39,26 +39,22 @@ namespace AmCharts.Windows.QuickCharts
         private static void OnValueMemberPathPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             SerialGraph graph = d as SerialGraph;
-            if (graph.ValueMemberPathChanged != null)
+            if (graph != null && graph.ValueMemberPathChanged != null)
             {
                 graph.ValueMemberPathChanged(graph, new DataPathEventArgs(e.NewValue as string));
             }
         }
 
-        private PointCollection _locations;
-        
         /// <summary>
         /// Gets locations (coordinates) of data points for the graph.
         /// </summary>
-        protected PointCollection Locations { get { return _locations; } }
-
-        private double _groundLevel;
+        protected PointCollection Locations { get; private set; }
 
         /// <summary>
         /// Gets Y-coordinate of 0 or a value closest to 0.
         /// </summary>
-        protected double GroundLevel { get { return _groundLevel; } }
-        
+        protected double GroundLevel { get; private set; }
+
         /// <summary>
         /// Sets point coordinates and ground level.
         /// </summary>
@@ -66,8 +62,8 @@ namespace AmCharts.Windows.QuickCharts
         /// <param name="groundLevel">Y-coordinate of 0 value or value closest to 0.</param>
         public void SetPointLocations(PointCollection locations, double groundLevel)
         {
-            _locations = locations;
-            _groundLevel = groundLevel;
+            this.Locations = locations;
+            this.GroundLevel = groundLevel;
         }
 
         /// <summary>
@@ -86,14 +82,13 @@ namespace AmCharts.Windows.QuickCharts
                 {
                     return Locations[1].X - Locations[0].X;
                 }
-                else if (Locations.Count == 1)
+                
+                if (Locations.Count == 1)
                 {
                     return Locations[0].X * 2;
                 }
-                else
-                {
-                    return 0;
-                }
+
+                return 0;
             }
         }
 

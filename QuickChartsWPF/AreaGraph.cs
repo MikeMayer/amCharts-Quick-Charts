@@ -28,13 +28,12 @@ namespace AmCharts.Windows.QuickCharts
 
         private void BindBrush()
         {
-            Binding brushBinding = new Binding("Brush");
-            brushBinding.Source = this;
+            Binding brushBinding = new Binding("Brush") {Source = this};
             _areaGraph.SetBinding(Polygon.FillProperty, brushBinding);
         }
 
         private Canvas _graphCanvas;
-        private Polygon _areaGraph;
+        private readonly Polygon _areaGraph;
 
         /// <summary>
         /// Applies control template.

@@ -70,8 +70,8 @@ namespace AmCharts.Windows.QuickCharts
             RenderSlice();
         }
 
-        private double _radius = 0;
-        private double _percentage = 0;
+        private double _radius;
+        private double _percentage;
 
         /// <summary>
         /// Sets slice dimensions and renders it.

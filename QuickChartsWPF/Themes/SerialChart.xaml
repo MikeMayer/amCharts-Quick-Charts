@@ -38,10 +38,13 @@
                                 <Canvas x:Name="PART_GraphCanvas" Background="Transparent" />
                             </Border>
 
-                            <amq:Legend x:Name="PART_Legend" Grid.Column="2" Grid.Row="0" 
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="2" Grid.Row="0" 
+                                  MaxHeight="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Grid, AncestorLevel=1}, Path=ActualHeight}">
+                                <amq:Legend x:Name="PART_Legend" 
                                         Margin="10,0,0,0" 
                                         Visibility="{TemplateBinding LegendVisibility}"
                                         />
+                            </ScrollViewer>
 
                             <Canvas Grid.Column="1" Grid.Row="0">
                                 <amq:Balloon x:Name="PART_Balloon" 

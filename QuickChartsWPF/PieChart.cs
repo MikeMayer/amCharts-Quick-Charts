@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Controls;
 using System.Windows;
 using System.Collections;
@@ -24,7 +23,7 @@ namespace AmCharts.Windows.QuickCharts
         public PieChart()
         {
             this.DefaultStyleKey = typeof(PieChart);
-            this._slices.CollectionChanged += new NotifyCollectionChangedEventHandler(OnSlicesCollectionChanged);
+            this._slices.CollectionChanged += OnSlicesCollectionChanged;
 
             Padding = new Thickness(10);
         }
@@ -63,7 +62,7 @@ namespace AmCharts.Windows.QuickCharts
         /// </summary>
         public static readonly DependencyProperty DataSourceProperty = DependencyProperty.Register(
             "DataSource", typeof(IEnumerable), typeof(PieChart),
-            new PropertyMetadata(null, new PropertyChangedCallback(PieChart.OnDataSourcePropertyChanged)));
+            new PropertyMetadata(null, OnDataSourcePropertyChanged));
 
         /// <summary>
         /// Gets or sets data source for the chart.
@@ -97,7 +96,7 @@ namespace AmCharts.Windows.QuickCharts
         {
             if (dataSource != null && dataSource is INotifyCollectionChanged)
             {
-                (dataSource as INotifyCollectionChanged).CollectionChanged += new NotifyCollectionChangedEventHandler(chart.OnDataSourceCollectionChanged);
+                (dataSource as INotifyCollectionChanged).CollectionChanged += chart.OnDataSourceCollectionChanged;
             }
         }
 
@@ -112,7 +111,7 @@ namespace AmCharts.Windows.QuickCharts
         /// </summary>
         public static readonly DependencyProperty TitleMemberPathProperty = DependencyProperty.Register(
             "TitleMemberPath", typeof(string), typeof(PieChart),
-            new PropertyMetadata(null, new PropertyChangedCallback(PieChart.OnMemberPathPropertyChanged))
+            new PropertyMetadata(null, OnMemberPathPropertyChanged)
             );
 
         /// <summary>
@@ -130,7 +129,7 @@ namespace AmCharts.Windows.QuickCharts
         /// </summary>
         public static readonly DependencyProperty ValueMemberPathProperty = DependencyProperty.Register(
             "ValueMemberPath", typeof(string), typeof(PieChart),
-            new PropertyMetadata(null, new PropertyChangedCallback(PieChart.OnMemberPathPropertyChanged))
+            new PropertyMetadata(null, OnMemberPathPropertyChanged)
             );
 
         /// <summary>
@@ -152,13 +151,13 @@ namespace AmCharts.Windows.QuickCharts
             }
         }
 
-        private List<string> _titles = new List<string>();
-        private List<double> _values = new List<double>();
+        private readonly List<string> _titles = new List<string>();
+        private readonly List<double> _values = new List<double>();
         private double _total;
 
         private void ProcessData()
         {
-            if (this.DataSource != null)
+            if (DataSource != null)
             {
                 SetData();
                 ReallocateSlices();
@@ -179,17 +178,18 @@ namespace AmCharts.Windows.QuickCharts
             _values.Clear();
             if (!string.IsNullOrEmpty(TitleMemberPath) && !string.IsNullOrEmpty(ValueMemberPath))
             {
-                BindingEvaluator titleEval = new BindingEvaluator(TitleMemberPath);
-                BindingEvaluator valueEval = new BindingEvaluator(ValueMemberPath);
-                foreach (object dataItem in this.DataSource)
+                var titleEval = new BindingEvaluator(TitleMemberPath);
+                var valueEval = new BindingEvaluator(ValueMemberPath);
+                foreach (var dataItem in DataSource)
                 {
                     _titles.Add(titleEval.Eval(dataItem).ToString());
                     _values.Add((double)valueEval.Eval(dataItem));
-                    if (dataItem is INotifyPropertyChanged)
-                    {
-                        (dataItem as INotifyPropertyChanged).PropertyChanged -= OnDataSourceItemPropertyChanged;
-                        (dataItem as INotifyPropertyChanged).PropertyChanged += new PropertyChangedEventHandler(OnDataSourceItemPropertyChanged);
-                    }
+
+                    if (!(dataItem is INotifyPropertyChanged)) 
+                        continue;
+
+                    (dataItem as INotifyPropertyChanged).PropertyChanged -= OnDataSourceItemPropertyChanged;
+                    (dataItem as INotifyPropertyChanged).PropertyChanged += OnDataSourceItemPropertyChanged;
                 }
                 _total = _values.Sum();
             }
@@ -263,16 +263,16 @@ namespace AmCharts.Windows.QuickCharts
 
         private void AddSlices()
         {
-            for (int i = _slices.Count; i < _values.Count; i++)
+            for (var i = _slices.Count; i < _values.Count; i++)
             {
-                Slice slice = new Slice {RenderTransform = new RotateTransform(), RenderTransformOrigin = new Point(0, 0)};
+                var slice = new Slice {RenderTransform = new RotateTransform(), RenderTransformOrigin = new Point(0, 0)};
                 _slices.Add(slice);
 #if WINDOWS_PHONE
                 slice.ManipulationStarted += new EventHandler<ManipulationStartedEventArgs>(OnSliceManipulationStarted);
 #else
-                slice.MouseEnter += new MouseEventHandler(OnSliceMouseEnter);
-                slice.MouseLeave += new MouseEventHandler(OnSliceMouseLeave);
-                slice.MouseMove += new MouseEventHandler(OnSliceMouseMove);
+                slice.MouseEnter += OnSliceMouseEnter;
+                slice.MouseLeave += OnSliceMouseLeave;
+                slice.MouseMove += OnSliceMouseMove;
 #endif
                 AddSliceToCanvas(slice);
             }
@@ -359,7 +359,7 @@ namespace AmCharts.Windows.QuickCharts
         public override void OnApplyTemplate()
         {
             _sliceCanvasDecorator = (Border)TreeHelper.TemplateFindName("PART_SliceCanvasDecorator", this);
-            _sliceCanvasDecorator.SizeChanged += new SizeChangedEventHandler(OnGraphCanvasDecoratorSizeChanged);
+            _sliceCanvasDecorator.SizeChanged += OnGraphCanvasDecoratorSizeChanged;
             _sliceCanvas = (Canvas)TreeHelper.TemplateFindName("PART_SliceCanvas", this);
 
             _balloon = (Balloon)TreeHelper.TemplateFindName("PART_Balloon", this);
@@ -402,7 +402,7 @@ namespace AmCharts.Windows.QuickCharts
             RenderSlices();
         }
 
-        private ObservableCollection<Slice> _slices = new ObservableCollection<Slice>();
+        private readonly ObservableCollection<Slice> _slices = new ObservableCollection<Slice>();
 
         private void RenderSlices()
         {
@@ -429,7 +429,7 @@ namespace AmCharts.Windows.QuickCharts
             }
         }
 
-        private readonly List<Brush> _presetBrushes = new List<Brush>()
+        private readonly List<Brush> _presetBrushes = new List<Brush>
         {
             new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0x0F, 0x00)),
             new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0x66, 0x00)),
@@ -463,8 +463,15 @@ namespace AmCharts.Windows.QuickCharts
 
 
         private Brush _balloonBrush = System.Windows.Media.Brushes.WhiteSmoke;
+        /// <summary>
+        /// Set the Brush that is to be used when drawing a Balloon
+        /// </summary>
+        /// <param name="brush">A non-null Brush object</param>
         public void SetBalloonBrush(Brush brush)
         {
+            if (brush == null)
+                throw new ArgumentNullException("brush");
+
                 _balloonBrush = brush;
         }
 

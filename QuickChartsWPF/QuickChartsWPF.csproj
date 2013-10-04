@@ -189,6 +189,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="Quick.Charts.WPF.1.2.nuspec" />
     <None Include="QuickChartsCD.cd" />
     <AppDesigner Include="Properties\" />
   </ItemGroup>

@@ -1,29 +1,28 @@
 ﻿<Window x:Class="QuickCharts.Window1"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:amq="clr-namespace:AmCharts.Windows.QuickCharts;assembly=AmCharts.Windows.QuickCharts"
-    Title="Window1" Height="300" Width="300" Loaded="Window_Loaded">
+        Title="Window1" Height="300" Width="300" Loaded="Window_Loaded">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <amq:SerialChart x:Name="chart1"
-                         DataSource="{Binding Data}" 
-                         CategoryValueMemberPath="cat1" 
+                         DataSource="{Binding Data}"
+                         CategoryValueMemberPath="cat1"
                          Background="White"
                          BorderBrush="Black"
                          BorderThickness="1"
                          AxisForeground="Magenta"
-                         ValueFormatString="0.00 Lt."
-                         >
+                         ValueFormatString="0.00 Lt.">
             <amq:SerialChart.Graphs>
                 <amq:LineGraph ValueMemberPath="val1" Title="Line #1" />
                 <amq:ColumnGraph ValueMemberPath="val2" Title="Column #1" ColumnWidthAllocation="0.2" />
                 <amq:AreaGraph ValueMemberPath="val3" Title="Area #1" />
             </amq:SerialChart.Graphs>
         </amq:SerialChart>
-        
+
         <StackPanel Grid.Row="1">
             <Button Click="Button_Click">Add data</Button>
             <Button Click="Button2_Click">Add random data</Button>

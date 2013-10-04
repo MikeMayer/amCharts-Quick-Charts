@@ -1,97 +1,101 @@
-﻿using System;
+﻿#region Namespaces
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Shapes;
-using System.Windows.Media;
 using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+#endregion
 
 namespace AmCharts.Windows.QuickCharts
 {
-    /// <summary>
-    /// Facilitates rendering of area graphs.
-    /// </summary>
-    public class AreaGraph : SerialGraph
-    {
-        /// <summary>
-        /// Instantiates AreaGraph.
-        /// </summary>
-        public AreaGraph()
-        {
-            this.DefaultStyleKey = typeof(AreaGraph);
-            _areaGraph = new Polygon();
+	/// <summary>
+	///     Facilitates rendering of area graphs.
+	/// </summary>
+	public class AreaGraph : SerialGraph
+	{
+		private readonly Polygon _areaGraph;
+		private Canvas _graphCanvas;
 
-            BindBrush();
-        }
+		/// <summary>
+		///     Instantiates AreaGraph.
+		/// </summary>
+		public AreaGraph()
+		{
+			this.DefaultStyleKey = typeof (AreaGraph);
+			_areaGraph = new Polygon();
 
-        private void BindBrush()
-        {
-            Binding brushBinding = new Binding("Brush") {Source = this};
-            _areaGraph.SetBinding(Polygon.FillProperty, brushBinding);
-        }
+			BindBrush();
+		}
 
-        private Canvas _graphCanvas;
-        private readonly Polygon _areaGraph;
+		private void BindBrush()
+		{
+			var brushBinding = new Binding("Brush")
+			{
+				Source = this
+			};
+			_areaGraph.SetBinding(Polygon.FillProperty, brushBinding);
+		}
 
-        /// <summary>
-        /// Applies control template.
-        /// </summary>
-        public override void OnApplyTemplate()
-        {
-            _graphCanvas = (Canvas)TreeHelper.TemplateFindName("PART_GraphCanvas", this);
-            _graphCanvas.Children.Add(_areaGraph);
-        }
+		/// <summary>
+		///     Applies control template.
+		/// </summary>
+		public override void OnApplyTemplate()
+		{
+			_graphCanvas = (Canvas)TreeHelper.TemplateFindName("PART_GraphCanvas", this);
+			_graphCanvas.Children.Add(_areaGraph);
+		}
 
-        /// <summary>
-        /// Renders area graph.
-        /// </summary>
-        public override void Render()
-        {
-            PointCollection newPoints = GetAreaPoints();
-            if (_areaGraph.Points.Count != newPoints.Count)
-            {
-                _areaGraph.Points = newPoints;
-            }
-            else
-            {
-                for (int i = 0; i < newPoints.Count; i++)
-                {
-                    if (!_areaGraph.Points[i].Equals(newPoints[i]))
-                    {
-                        _areaGraph.Points = newPoints;
-                        break;
-                    }
-                }
-            }
-        }
+		/// <summary>
+		///     Renders area graph.
+		/// </summary>
+		public override void Render()
+		{
+			var newPoints = GetAreaPoints();
+			if (_areaGraph.Points.Count != newPoints.Count)
+			{
+				_areaGraph.Points = newPoints;
+			}
+			else
+			{
+				for (var i = 0 ; i < newPoints.Count ; i++)
+				{
+					if (!_areaGraph.Points[i].Equals(newPoints[i]))
+					{
+						_areaGraph.Points = newPoints;
+						break;
+					}
+				}
+			}
+		}
 
-        private PointCollection GetAreaPoints()
-        {
+		private PointCollection GetAreaPoints()
+		{
 
-            PointCollection points = new PointCollection();
+			var points = new PointCollection();
 
-            if (Locations == null)
-                return points;
+			if (Locations == null)
+			{
+				return points;
+			}
 
-            CopyLocationsToPoints(points);
+			CopyLocationsToPoints(points);
 
-            if (points.Count > 0)
-            {
-                points.Insert(0, new Point(points[0].X, GroundLevel));
-                points.Add(new Point(points[points.Count - 1].X, GroundLevel));
-            }
-            return points;
-        }
+			if (points.Count > 0)
+			{
+				points.Insert(0, new Point(points[0].X, GroundLevel));
+				points.Add(new Point(points[points.Count - 1].X, GroundLevel));
+			}
+			return points;
+		}
 
-        private void CopyLocationsToPoints(PointCollection points)
-        {
-            // copy Points from location cause SL doesn't support PointColleciton() with parameter
-            foreach (Point p in Locations)
-            {
-                points.Add(p);
-            }
-        }
-    }
+		private void CopyLocationsToPoints(ICollection<Point> points)
+		{
+			// copy Points from location cause SL doesn't support PointCollection() with parameter
+			foreach (var p in Locations)
+				points.Add(p);
+		}
+	}
 }

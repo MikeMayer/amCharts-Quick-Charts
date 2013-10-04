@@ -259,16 +259,22 @@ namespace AmCharts.Windows.QuickCharts
             _legend.ManipulationStarted += new EventHandler<ManipulationStartedEventArgs>(OnGridManipulationStarted);
 #endif
         }
+
+#if !SILVERLIGHT
         private Brush _balloonBrush = System.Windows.Media.Brushes.WhiteSmoke;
         public void SetBalloonBrush(Brush brush)
         {
             _balloonBrush = brush;
         }
-        private void AssignBalloon()
+#endif
+
+		private void AssignBalloon()
         {
             _balloon = (Balloon)TreeHelper.TemplateFindName("PART_Balloon", this);
+#if !SILVERLIGHT
             _balloon.BorderBrush = _balloonBrush;
-        }
+#endif
+		}
 
 #if WINDOWS_PHONE
         void OnGraphCanvasManipulationStarted(object sender, ManipulationStartedEventArgs e)

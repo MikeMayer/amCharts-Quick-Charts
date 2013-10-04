@@ -363,9 +363,11 @@ namespace AmCharts.Windows.QuickCharts
             _sliceCanvas = (Canvas)TreeHelper.TemplateFindName("PART_SliceCanvas", this);
 
             _balloon = (Balloon)TreeHelper.TemplateFindName("PART_Balloon", this);
+#if !SILVERLIGHT
             _balloon.BorderBrush = _balloonBrush;
+#endif
 
-            AddSlicesToCanvas();
+			AddSlicesToCanvas();
 
             _legend = (Legend)TreeHelper.TemplateFindName("PART_Legend", this);
 
@@ -461,7 +463,7 @@ namespace AmCharts.Windows.QuickCharts
             set { _brushes = value; }
         }
 
-
+#if !SILVERLIGHT
         private Brush _balloonBrush = System.Windows.Media.Brushes.WhiteSmoke;
         /// <summary>
         /// Set the Brush that is to be used when drawing a Balloon
@@ -474,8 +476,9 @@ namespace AmCharts.Windows.QuickCharts
 
                 _balloonBrush = brush;
         }
+#endif
 
-        private void DisplayBalloon(Slice slice, Point position)
+		private void DisplayBalloon(Slice slice, Point position)
         {
             _balloon.Text = slice.ToolTipText;
             _balloon.Visibility = Visibility.Visible;

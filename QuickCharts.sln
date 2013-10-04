@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{34537016-2DAB-4F92-A543-F24FEC55F5D5}"
 	ProjectSection(SolutionItems) = preProject
 		QuickChartsWPF\docs\changelog.txt = QuickChartsWPF\docs\changelog.txt
